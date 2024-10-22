@@ -1,6 +1,6 @@
+use common::containers::traits::FillableContainer;
 use lab1::algorithms::*;
 use lab1::containers::ListBasedQueue;
-use common::containers::traits::FillableContainer;
 
 fn option_to_str<T: std::fmt::Display>(opt: &Option<T>) -> String {
     if let Some(t) = opt {

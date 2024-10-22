@@ -1,5 +1,7 @@
+use crate::containers::traits::{
+    ErasableContainer, FillableContainer, SearchableContainer, SizedContainer,
+};
 use crate::subcontainers::traits::*;
-use crate::containers::traits::SizedContainer;
 
 pub struct ArrayBasedDeque<T>
 where
@@ -38,7 +40,8 @@ where
         ndx.wrapping_sub(1) & mask
     }
 
-    pub fn increase_capacity(&mut self, new_capacity: usize) {
+    pub fn double_the_capacity(&mut self) {
+        let new_capacity = self.size() * 2;
         let new_slice = Self::allocate_slice(new_capacity, || T::default());
         let old_slice = std::mem::replace(&mut self.ring, new_slice);
 
@@ -51,10 +54,6 @@ where
             self.ring[i] = element;
             i += 1;
         }
-    }
-
-    pub fn double_the_capacity(&mut self) {
-        self.increase_capacity(self.size() * 2)
     }
 
     fn allocate_slice<F>(size: usize, mut initializer: F) -> Box<[T]>
@@ -165,6 +164,59 @@ where
 }
 
 impl<T> Deque<T> for ArrayBasedDeque<T> where T: Default {}
+
+impl<T> ErasableContainer<T> for ArrayBasedDeque<T>
+where
+    T: Default,
+{
+    fn erase_first<F>(&mut self, predicate: F) -> Option<T>
+    where
+        F: Fn(&T) -> bool,
+    {
+        self.find_mut(predicate).map(|found| std::mem::take(found))
+    }
+}
+
+impl<T> FillableContainer<T> for ArrayBasedDeque<T>
+where
+    T: Default,
+{
+    fn push(&mut self, element: T) -> &mut Self {
+        self.push_back(element);
+        self
+    }
+}
+
+impl<T> SearchableContainer<T> for ArrayBasedDeque<T>
+where
+    T: Default,
+{
+    fn find<F>(&self, predicate: F) -> Option<&T>
+    where
+        F: Fn(&T) -> bool,
+    {
+        for item in self.ring.iter() {
+            if predicate(&item) {
+                return Some(item);
+            }
+        }
+
+        None
+    }
+
+    fn find_mut<F>(&mut self, predicate: F) -> Option<&mut T>
+    where
+        F: Fn(&T) -> bool,
+    {
+        for item in self.ring.iter_mut() {
+            if predicate(&item) {
+                return Some(item);
+            }
+        }
+
+        None
+    }
+}
 
 #[cfg(test)]
 mod tests {
