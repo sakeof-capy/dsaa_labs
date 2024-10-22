@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lab1 = { path = "../lab1" }
+lab1 = { path = "../lab1_" }
 common = { path = "../common" }
 
 [[bin]]
