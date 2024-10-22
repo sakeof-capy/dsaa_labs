@@ -1,0 +1,12 @@
+[package]
+name = "lab2_bin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lab2 = { path = "../lab2" }
+common = { path = "../common" }
+
+[[bin]]
+name = "lab2"
+path = "src/main.rs"
