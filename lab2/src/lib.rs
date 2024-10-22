@@ -35,8 +35,6 @@ mod tests {
         hash_map.put("a".to_owned(), 5);
         assert_eq!(unwrap_option(hash_map.find("a")), 5);
 
-        println!("{}", hash_map.collision_counter());
-
         for c in 'a'..'z' {
             hash_map.put(c.to_string(), c as i32);
         }
@@ -52,7 +50,5 @@ mod tests {
         for i in 0..128 {
             assert_eq!(unwrap_option(hash_map.find(&format!("string{}", i))), i);
         }
-
-        println!("{}", hash_map.collision_counter());
     }
 }
