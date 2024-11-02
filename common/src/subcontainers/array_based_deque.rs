@@ -1,17 +1,33 @@
 use crate::containers::traits::{
     ErasableContainer, FillableContainer, SearchableContainer, SizedContainer,
 };
+use crate::subcontainers::resizable_array::ResizableArray;
 use crate::subcontainers::traits::*;
 
 pub struct ArrayBasedDeque<T>
 where
     T: Default,
 {
-    ring: Box<[T]>,
+    ring: ResizableArray<T>,
     head: usize,
     tail: usize,
-    capacity: usize,
     size: usize,
+}
+
+
+impl<T> Default for ArrayBasedDeque<T>
+where
+    T: Default,
+{
+    #[inline(always)]
+    fn default() -> Self {
+        Self {
+            ring: ResizableArray::new(1),
+            head: 0,
+            tail: 1,
+            size: 0,
+        }
+    }
 }
 
 impl<T> ArrayBasedDeque<T>
@@ -29,67 +45,23 @@ where
     }
 
     #[inline(always)]
-    const fn next_ndx(&self, ndx: usize) -> usize {
-        let mask = (1 << Self::log2(self.capacity)) - 1;
+    fn next_ndx(&self, ndx: usize) -> usize {
+        let mask = (1 << Self::log2(self.capacity())) - 1;
         (ndx + 1) & mask
     }
 
     #[inline(always)]
-    const fn prev_ndx(&self, ndx: usize) -> usize {
-        let mask = (1 << Self::log2(self.capacity)) - 1;
+    fn prev_ndx(&self, ndx: usize) -> usize {
+        let mask = (1 << Self::log2(self.capacity())) - 1;
         ndx.wrapping_sub(1) & mask
     }
 
-    pub fn double_the_capacity(&mut self) {
-        let new_capacity = self.size() * 2;
-        let new_slice = Self::allocate_slice(new_capacity, || T::default());
-        let old_slice = std::mem::replace(&mut self.ring, new_slice);
-
-        self.head = 0;
-        self.tail = old_slice.len() - 1;
-        self.capacity = new_capacity;
-
-        let mut i = 0;
-        for element in old_slice.into_vec() {
-            self.ring[i] = element;
-            i += 1;
-        }
+    fn double_the_capacity(&mut self) {
+        self.ring.double_the_size();
     }
 
-    fn allocate_slice<F>(size: usize, mut initializer: F) -> Box<[T]>
-    where
-        F: FnMut() -> T,
-    {
-        let layout = std::alloc::Layout::array::<T>(size).unwrap();
-        let ptr = unsafe { std::alloc::alloc(layout) as *mut T };
-
-        if ptr.is_null() {
-            std::alloc::handle_alloc_error(layout);
-        }
-
-        for i in 0..size {
-            unsafe {
-                std::ptr::write(ptr.add(i), initializer());
-            }
-        }
-
-        unsafe { Box::from_raw(std::slice::from_raw_parts_mut(ptr, size)) }
-    }
-}
-
-impl<T> Default for ArrayBasedDeque<T>
-where
-    T: Default,
-{
-    #[inline(always)]
-    fn default() -> Self {
-        Self {
-            ring: Box::new([T::default()]),
-            head: 0,
-            tail: 1,
-            capacity: 1,
-            size: 0,
-        }
+    fn capacity(&self) -> usize {
+        self.ring.size()
     }
 }
 
@@ -108,7 +80,7 @@ where
     T: Default,
 {
     fn push_front(&mut self, element: T) {
-        if self.size() == self.capacity {
+        if self.size() == self.capacity() {
             self.double_the_capacity();
         }
 
@@ -138,7 +110,7 @@ where
     T: Default,
 {
     fn push_back(&mut self, element: T) {
-        if self.size() == self.capacity {
+        if self.size() == self.capacity() {
             self.double_the_capacity();
         }
 
@@ -195,26 +167,14 @@ where
     where
         F: Fn(&T) -> bool,
     {
-        for item in self.ring.iter() {
-            if predicate(&item) {
-                return Some(item);
-            }
-        }
-
-        None
+        self.ring.find(predicate)
     }
 
     fn find_mut<F>(&mut self, predicate: F) -> Option<&mut T>
     where
         F: Fn(&T) -> bool,
     {
-        for item in self.ring.iter_mut() {
-            if predicate(&item) {
-                return Some(item);
-            }
-        }
-
-        None
+        self.ring.find_mut(predicate)
     }
 }
 

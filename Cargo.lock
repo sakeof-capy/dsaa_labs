@@ -35,3 +35,7 @@ dependencies = [
  "common",
  "lab2",
 ]
+
+[[package]]
+name = "lab3"
+version = "0.1.0"
