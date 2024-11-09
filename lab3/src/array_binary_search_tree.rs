@@ -1,6 +1,6 @@
+use crate::traits::{NodeIdentifiableTree, ParentifiedTree, RotatableTree, Tree};
 use common::containers::traits::{SearchableContainer, SizedContainer};
 use common::subcontainers::resizable_array::ResizableArray;
-use crate::traits::Tree;
 
 const ROOT_NDX: usize = 1;
 const INITIAL_CAPACITY: usize = ROOT_NDX + 1;
@@ -12,6 +12,11 @@ struct Node<Key, Value> {
 }
 
 type Cell<Key, Value> = Option<Node<Key, Value>>;
+
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
+pub struct NodeId {
+    node_ndx: usize,
+}
 
 pub struct ArrayBinarySearchTree<Key, Value>
 where
@@ -61,11 +66,15 @@ where
             .ok_or(index)
     }
 
-    fn find_cell_mut(&mut self, key: &Key) -> Result<&mut Cell<Key, Value>, usize> {
+    fn find_cell_mut(&mut self, key: &Key) -> Result<(&mut Cell<Key, Value>, usize), usize> {
         let index = self.find_index(key);
         (index < self.array.size())
-            .then(|| &mut self.array[index])
+            .then(|| (&mut self.array[index], index))
             .ok_or(index)
+    }
+
+    fn extract_node_with_id(&self, node_id: NodeId) -> bool {
+        node_id.node_ndx < self.array.size() && self.array[node_id.node_ndx].is_some()
     }
 }
 
@@ -74,18 +83,7 @@ where
     Key: Ord,
 {
     fn insert(&mut self, key: Key, val: Value) {
-        match self.find_cell_mut(&key) {
-            Ok(Some(node)) => {
-                node.val = val;
-            }
-            Ok(cell) => {
-                *cell = Some(Node { key, val });
-            }
-            Err(next_index) => {
-                self.array.double_the_size();
-                self.array[next_index] = Some(Node { key, val });
-            }
-        }
+        let _ = self.insert_and_get_id(key, val);
     }
 
     fn get(&self, key: &Key) -> Option<&Value> {
@@ -101,6 +99,173 @@ where
         //     .and_then(|cell| std::mem::take(cell))
         //     .map(|node| node.val)
         todo!()
+    }
+}
+
+impl<Key, Value> NodeIdentifiableTree<Key, Value, NodeId> for ArrayBinarySearchTree<Key, Value>
+where
+    Key: Ord,
+{
+    fn insert_and_get_id(&mut self, key: Key, val: Value) -> NodeId {
+        let node_ndx = match self.find_cell_mut(&key) {
+            Ok((Some(node), node_ndx)) => {
+                node.val = val;
+                node_ndx
+            }
+            Ok((cell, node_ndx)) => {
+                *cell = Some(Node { key, val });
+                node_ndx
+            }
+            Err(next_index) => {
+                self.array.double_the_size();
+                self.array[next_index] = Some(Node { key, val });
+                next_index
+            }
+        };
+
+        NodeId { node_ndx }
+    }
+
+    fn get_by_id(&self, node_id: NodeId) -> Option<&Value> {
+        if node_id.node_ndx >= self.array.size() {
+            return None;
+        }
+
+        match self.array[node_id.node_ndx] {
+            Some(ref node) => Some(&node.val),
+            None => None,
+        }
+    }
+
+    fn get_by_id_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+        match self.array[node_id.node_ndx] {
+            Some(ref mut node) => Some(&mut node.val),
+            None => None,
+        }
+    }
+
+    fn get_left_son_id(&self, node_id: NodeId) -> Option<NodeId> {
+        let _ = self.get_by_id(node_id)?;
+        let right_son_ndx = 2 * node_id.node_ndx + 1;
+        self.get_by_id(NodeId {
+            node_ndx: right_son_ndx,
+        })
+        .map(|_| NodeId {
+            node_ndx: right_son_ndx,
+        })
+    }
+
+    fn get_right_son_id(&self, node_id: NodeId) -> Option<NodeId> {
+        let _ = self.get_by_id(node_id)?;
+        let right_son_ndx = 2 * node_id.node_ndx;
+        self.get_by_id(NodeId {
+            node_ndx: right_son_ndx,
+        })
+        .map(|_| NodeId {
+            node_ndx: right_son_ndx,
+        })
+    }
+
+    fn get_left_uncle_id(&self, node_id: NodeId) -> Option<NodeId> {
+        let parent_id = self.get_parent_id(node_id)?;
+        let grand_parent_id = self.get_parent_id(parent_id)?;
+        self.get_left_son_id(grand_parent_id)
+    }
+
+    fn get_right_uncle_id(&self, node_id: NodeId) -> Option<NodeId> {
+        let parent_id = self.get_parent_id(node_id)?;
+        let grand_parent_id = self.get_parent_id(parent_id)?;
+        self.get_right_son_id(grand_parent_id)
+    }
+
+    fn get_root_id(&self) -> NodeId {
+        NodeId { node_ndx: ROOT_NDX }
+    }
+
+    fn get_left_son_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+        self.get_by_id_mut(self.get_left_son_id(node_id)?)
+    }
+
+    fn get_right_son_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+        self.get_by_id_mut(self.get_right_son_id(node_id)?)
+    }
+
+    fn get_left_uncle_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+        self.get_by_id_mut(self.get_left_uncle_id(node_id)?)
+    }
+
+    fn get_right_uncle_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+        self.get_by_id_mut(self.get_right_uncle_id(node_id)?)
+    }
+
+    fn get_root_mut(&mut self) -> Option<&mut Value> {
+        self.get_by_id_mut(self.get_root_id())
+    }
+
+    fn modify<F>(&mut self, node_id: NodeId, mut modifier: F)
+    where
+        F: FnMut(&mut Value),
+    {
+        if let Some(value) = self.get_by_id_mut(node_id) {
+            modifier(value);
+        }
+    }
+}
+
+impl<Key, Value> ParentifiedTree<Key, Value, NodeId> for ArrayBinarySearchTree<Key, Value>
+where
+    Key: Ord,
+{
+    fn get_parent_id(&self, node_id: NodeId) -> Option<NodeId> {
+        let _ = self.get_by_id(node_id)?;
+        let parent_ndx = node_id.node_ndx / 2;
+        self.get_by_id(NodeId {
+            node_ndx: parent_ndx,
+        })
+        .map(|_| NodeId {
+            node_ndx: parent_ndx,
+        })
+    }
+
+    fn get_parent(&mut self, node_id: NodeId) -> Option<&Value> {
+        self.get_by_id(self.get_parent_id(node_id)?)
+    }
+
+    fn get_parent_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+        self.get_by_id_mut(self.get_parent_id(node_id)?)
+    }
+
+    fn is_left_son(&self, node_id: NodeId) -> bool {
+        if let Some(parent_id) = self.get_parent_id(node_id)
+            && let Some(left_brother_id) = self.get_left_son_id(parent_id)
+        {
+            node_id == left_brother_id
+        } else {
+            false
+        }
+    }
+
+    fn is_right_son(&self, node_id: NodeId) -> bool {
+        if let Some(parent_id) = self.get_parent_id(node_id)
+            && let Some(right_brother_id) = self.get_right_son_id(parent_id)
+        {
+            parent_id == right_brother_id
+        } else {
+            false
+        }
+    }
+}
+
+impl<Key, Value> RotatableTree<Key, Value, NodeId> for ArrayBinarySearchTree<Key, Value>
+where
+    Key: Ord,
+{
+    fn right_rotate(&mut self, node_id: NodeId) {
+        println!("RIGHT ROTATE");
+    }
+
+    fn left_rotate(&mut self, node_id: NodeId) {
+        println!("LEFT ROTATE");
     }
 }
 
@@ -131,7 +296,12 @@ where
     let left_child = 2 * root_ndx;
     let right_child = 2 * root_ndx + 1;
 
-    result.push_str(&stringify_subtree(left_child, array, child_prefix.clone(), true));
+    result.push_str(&stringify_subtree(
+        left_child,
+        array,
+        child_prefix.clone(),
+        true,
+    ));
     result.push_str(&stringify_subtree(right_child, array, child_prefix, false));
 
     result
@@ -143,14 +313,18 @@ where
     Value: std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", stringify_subtree(ROOT_NDX, &self.array, "".to_string(), false))
+        write!(
+            f,
+            "{}",
+            stringify_subtree(ROOT_NDX, &self.array, "".to_string(), false)
+        )
     }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::array_binary_search_tree::ArrayBinarySearchTree;
-    use crate::traits::Tree;
+    use crate::traits::{NodeIdentifiableTree, ParentifiedTree, RotatableTree, Tree};
 
     #[test]
     fn test_binary_tree() {
@@ -184,5 +358,14 @@ mod tests {
             let found = tree.get(&non_existent);
             assert!(found.is_none());
         }
+    }
+
+    #[test]
+    fn test_rotations() {
+        let mut tree = ArrayBinarySearchTree::default();
+        let id = tree.insert_and_get_id(15, 0);
+        tree.insert(5, 0);
+        tree.insert(1, 0);
+        tree.right_rotate(id);
     }
 }
