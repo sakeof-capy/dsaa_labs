@@ -14,7 +14,6 @@ where
     size: usize,
 }
 
-
 impl<T> Default for ArrayBasedDeque<T>
 where
     T: Default,

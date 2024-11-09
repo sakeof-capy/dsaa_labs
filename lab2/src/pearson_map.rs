@@ -114,13 +114,13 @@ where
     }
 
     pub fn find(&self, key: &str) -> Option<&ValueType> {
-        self.lists[to_index(&key)]
+        self.lists[to_index(key)]
             .find(|Pair(found_key, _)| key == found_key)
-            .map(|Pair(_, value)| &*value)
+            .map(|Pair(_, value)| value)
     }
 
     pub fn get(&mut self, key: &str) -> Option<ValueType> {
-        self.lists[to_index(&key)]
+        self.lists[to_index(key)]
             .erase_first(|Pair(found_key, _)| key == found_key)
             .inspect(|_| self.size = self.size.wrapping_sub(1))
             .map(|Pair(_, value)| value)

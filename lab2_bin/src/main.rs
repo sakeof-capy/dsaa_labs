@@ -7,10 +7,21 @@ fn main() {
     let stdin = io::stdin();
     let mut lines = stdin.lock().lines();
 
-    let first_line = lines.next().expect("Failed to read line").expect("Failed to parse line");
+    let first_line = lines
+        .next()
+        .expect("Failed to read line")
+        .expect("Failed to parse line");
     let mut parts = first_line.split_whitespace();
-    let m: usize = parts.next().expect("Missing m value").parse().expect("Failed to parse m");
-    let n: usize = parts.next().expect("Missing n value").parse().expect("Failed to parse n");
+    let m: usize = parts
+        .next()
+        .expect("Missing m value")
+        .parse()
+        .expect("Failed to parse m");
+    let n: usize = parts
+        .next()
+        .expect("Missing n value")
+        .parse()
+        .expect("Failed to parse n");
 
     println!("m = {}, n = {}", m, n);
 

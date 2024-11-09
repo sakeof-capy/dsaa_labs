@@ -105,7 +105,7 @@ mod tests {
             &[1][..], // 1 at the center
             &[2; BIG_SIZE / 2][..],
         ]
-            .concat();
+        .concat();
 
         test_central_element::<ListBasedQueue<Number>>(&big_array);
 
@@ -116,7 +116,7 @@ mod tests {
             &[2; BIG_SIZE / 2][..],
             &[7, -1][..],
         ]
-            .concat();
+        .concat();
 
         test_mins_and_maxs_evaluation::<ListBasedQueue<Number>>(
             &big_array,
@@ -151,7 +151,7 @@ mod tests {
             &[1][..], // 1 at the center
             &[2; BIG_SIZE / 2][..],
         ]
-            .concat();
+        .concat();
 
         test_central_element::<ListBasedStack<Number>>(&big_array);
 
@@ -162,7 +162,7 @@ mod tests {
             &[2; BIG_SIZE / 2][..],
             &[7, -1][..],
         ]
-            .concat();
+        .concat();
 
         test_mins_and_maxs_evaluation::<ListBasedStack<Number>>(
             &big_array,
@@ -197,7 +197,7 @@ mod tests {
             &[1][..], // 1 at the center
             &[2; BIG_SIZE / 2][..],
         ]
-            .concat();
+        .concat();
 
         test_central_element::<ArrayBasedQueue<Number>>(&big_array);
 
@@ -208,7 +208,7 @@ mod tests {
             &[2; BIG_SIZE / 2][..],
             &[7, -1][..],
         ]
-            .concat();
+        .concat();
 
         test_mins_and_maxs_evaluation::<ArrayBasedQueue<Number>>(
             &big_array,
@@ -243,7 +243,7 @@ mod tests {
             &[1][..], // 1 at the center
             &[2; BIG_SIZE / 2][..],
         ]
-            .concat();
+        .concat();
 
         test_central_element::<ArrayBasedStack<Number>>(&big_array);
 
@@ -254,7 +254,7 @@ mod tests {
             &[2; BIG_SIZE / 2][..],
             &[7, -1][..],
         ]
-            .concat();
+        .concat();
 
         test_mins_and_maxs_evaluation::<ArrayBasedStack<Number>>(
             &big_array,
@@ -277,4 +277,3 @@ mod tests {
         );
     }
 }
-

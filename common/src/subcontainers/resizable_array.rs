@@ -1,5 +1,5 @@
-use crate::containers::traits::SizedContainer;
 use crate::containers::traits::SearchableContainer;
+use crate::containers::traits::SizedContainer;
 use std::ops::{Index, IndexMut};
 
 pub struct ResizableArray<T>
@@ -40,7 +40,7 @@ where
             i += 1;
         }
     }
-    
+
     pub fn double_the_size(&mut self) {
         self.resize(self.size() * 2);
     }
@@ -66,7 +66,7 @@ where
     }
 }
 
-impl<T> Index<usize> for ResizableArray<T> 
+impl<T> Index<usize> for ResizableArray<T>
 where
     T: Default,
 {
@@ -77,7 +77,7 @@ where
     }
 }
 
-impl<T> IndexMut<usize> for ResizableArray<T> 
+impl<T> IndexMut<usize> for ResizableArray<T>
 where
     T: Default,
 {
