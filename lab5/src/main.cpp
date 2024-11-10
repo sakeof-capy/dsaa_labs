@@ -53,7 +53,7 @@ void merge(const Iterator begin, const Iterator end, Order order)
 
 void batchers_sort_utility(Iterator begin, Iterator end, Order order, std::size_t parallelizations_left)
 {
-    std::size_t count = (end - begin);
+    auto count = (end - begin);
 
     if (count <= 1)
     {
