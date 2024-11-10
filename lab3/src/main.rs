@@ -8,8 +8,12 @@ mod array_binary_search_tree;
 mod red_black_tree;
 mod traits;
 
-pub type ArrayRedBlackTree<Key, Value> =
-    RedBlackTree<Key, Value, ArrayBinarySearchTree<Key, red_black_tree::Data<Value>>, array_binary_search_tree::NodeId>;
+pub type ArrayRedBlackTree<Key, Value> = RedBlackTree<
+    Key,
+    Value,
+    ArrayBinarySearchTree<Key, red_black_tree::Data<Value>>,
+    array_binary_search_tree::NodeId,
+>;
 
 fn main() {
     let mut tree = ArrayRedBlackTree::default();

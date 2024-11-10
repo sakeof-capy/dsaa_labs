@@ -47,7 +47,8 @@ pub fn evaluate_rotations(polyline: &[Vec2d]) -> Box<[RotationDirection]> {
     if polyline.len() < MIN_SIZE {
         Box::new([])
     } else {
-        polyline.windows(MIN_SIZE)
+        polyline
+            .windows(MIN_SIZE)
             .map(|window| (window[0], window[1], window[2]))
             .map(|(p1, p2, p3)| (p2 - p1, p3 - p2))
             .map(|(v1, v2)| evaluate_rotation_direction(v1, v2))

@@ -16,7 +16,12 @@ where
     Value: std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "[{} | {}]", self.value, if self.color == RED { "RED" } else { "BLACK" })
+        write!(
+            f,
+            "[{} | {}]",
+            self.value,
+            if self.color == RED { "RED" } else { "BLACK" }
+        )
     }
 }
 

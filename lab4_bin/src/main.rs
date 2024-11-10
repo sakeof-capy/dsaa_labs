@@ -1,13 +1,15 @@
-use std::io::{self, Write};
-use lab4::*;
 use csv;
+use lab4::*;
+use std::io::{self, Write};
 
 fn main() {
     let n = {
         let mut input = String::new();
         print!("Enter the number of points (0 < N < 256): ");
         io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
         input.trim().parse().expect("Please enter a valid number")
     };
 
@@ -18,7 +20,9 @@ fn main() {
 
     let points = {
         let mut points = Vec::new();
-        let mut rdr = csv::ReaderBuilder::new().has_headers(false).from_reader(io::stdin());
+        let mut rdr = csv::ReaderBuilder::new()
+            .has_headers(false)
+            .from_reader(io::stdin());
         let mut count = 0;
 
         for result in rdr.records() {
