@@ -1,5 +1,3 @@
-use std::vec::IntoIter;
-
 pub type Vertex = usize;
 
 pub struct Edge(pub Vertex, pub Vertex);
