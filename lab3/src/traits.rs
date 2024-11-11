@@ -12,7 +12,7 @@ pub trait NodeIdentifiableTree<Key, Value, NodeId> {
 
     fn get_left_son_id(&self, node_id: NodeId) -> Option<NodeId>;
     fn get_right_son_id(&self, node_id: NodeId) -> Option<NodeId>;
-    fn get_root_id(&self) -> NodeId;
+    fn get_root_id(&self) -> Option<NodeId>;
 
     fn get_left_son_mut(&mut self, node_id: NodeId) -> Option<&mut Value>;
     fn get_right_son_mut(&mut self, node_id: NodeId) -> Option<&mut Value>;
