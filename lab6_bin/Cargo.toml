@@ -1,0 +1,11 @@
+[package]
+name = "lab6_bin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+lab6 = { path = "../lab6" }
+
+[[bin]]
+name = "lab6"
+path = "src/main.rs"
