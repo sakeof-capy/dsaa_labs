@@ -5,7 +5,7 @@ use lab6::shortest_path::floyd_shortest_path;
 fn print_shortest_path<const V: usize>(graph: &Graph<V>, v1: Vertex, v2: Vertex) {
     let message = match floyd_shortest_path(&graph, v1, v2) {
         Ok(path) => {
-            format!("Shortest path = {:?}", path)
+            format!("Shortest path between {} and {} = {:?}", v1, v2, path)
         }
         Err(shortest_path::Error::NoShortestPath) => {
             "No shortest path".to_string()
