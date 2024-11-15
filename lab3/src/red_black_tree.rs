@@ -6,14 +6,18 @@ type Color = bool;
 const RED: Color = true;
 const BLACK: Color = false;
 
-pub(super) struct Data<Value> {
+#[derive(Clone)]
+pub(crate) struct Data<Value>
+where
+    Value: Clone,
+{
     value: Value,
     color: Color,
 }
 
 impl<Value> std::fmt::Display for Data<Value>
 where
-    Value: std::fmt::Display,
+    Value: Clone + std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
@@ -28,6 +32,7 @@ where
 pub struct RedBlackTree<Key, Value, ImplTree, NodeId>
 where
     Key: Ord,
+    Value: Clone,
     NodeId: Default + Clone + Copy + PartialEq + Eq,
     ImplTree: Default
         + Tree<Key, Data<Value>>
@@ -44,6 +49,7 @@ where
 impl<Key, Value, ImplTree, NodeId> Default for RedBlackTree<Key, Value, ImplTree, NodeId>
 where
     Key: Ord,
+    Value: Clone,
     NodeId: Default + Clone + Copy + PartialEq + Eq,
     ImplTree: Default
         + Tree<Key, Data<Value>>
@@ -64,6 +70,7 @@ where
 impl<Key, Value, ImplTree, NodeId> Tree<Key, Value> for RedBlackTree<Key, Value, ImplTree, NodeId>
 where
     Key: Ord,
+    Value: Clone,
     NodeId: Default + Clone + Copy + PartialEq + Eq,
     ImplTree: Default
         + Tree<Key, Data<Value>>
@@ -82,7 +89,7 @@ where
 
         while let Some(z_node) = self.bst.get_by_id(z_node_id)
             && z_node.color == RED
-            && self.bst.get_root_id() != z_node_id
+            && self.bst.get_root_id() != Some(z_node_id)
         {
             let z_parent_id = self.bst.get_parent_id(z_node_id).unwrap();
 
@@ -147,8 +154,8 @@ where
         // }
     }
 
-    fn get(&self, key: &Key) -> Option<&Value> {
-        self.bst.get(key).map(|x| &x.value)
+    fn get(&self, key: &Key) -> Option<Value> {
+        self.bst.get(key).map(|x| x.value)
     }
 
     fn delete(&mut self, key: &Key) -> Option<Value> {
@@ -159,7 +166,7 @@ where
 impl<Key, Value, ImplTree, NodeId> std::fmt::Display for RedBlackTree<Key, Value, ImplTree, NodeId>
 where
     Key: Ord + std::fmt::Display,
-    Value: std::fmt::Display,
+    Value: Clone + std::fmt::Display,
     NodeId: Default + Clone + Copy + PartialEq + Eq,
     ImplTree: Default
         + Tree<Key, Data<Value>>

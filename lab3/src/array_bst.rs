@@ -31,6 +31,7 @@ enum InsertionPlace {
 pub struct ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     array: Vec<Node<Key, Value>>,
     root_id: Option<NodeId>,
@@ -39,6 +40,7 @@ where
 impl<Key, Value> Default for ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     #[inline(always)]
     fn default() -> Self {
@@ -52,6 +54,7 @@ where
 impl<Key, Value> ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     fn find_insertion_place(&self, key: &Key) -> InsertionPlace {
         let mut maybe_current_node = self.get_root_node();
@@ -93,15 +96,16 @@ where
 impl<Key, Value> Tree<Key, Value> for ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     fn insert(&mut self, key: Key, val: Value) {
         let _ = self.insert_and_get_id(key, val);
     }
 
-    fn get(&self, key: &Key) -> Option<&Value> {
+    fn get(&self, key: &Key) -> Option<Value> {
         match self.find_insertion_place(key) {
             InsertionPlace::NodeAlreadyExists(node_id) => {
-                self.get_node_by_id(node_id).map(|node| &node.val)
+                self.get_node_by_id(node_id).map(|node| node.val.clone())
             }
             _ => None,
         }
@@ -115,6 +119,7 @@ where
 impl<Key, Value> NodeIdentifiableTree<Key, Value, NodeId> for ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     fn insert_and_get_id(&mut self, key: Key, val: Value) -> NodeId {
         let inserted_node_id = match self.find_insertion_place(&key) {
@@ -221,6 +226,7 @@ where
 impl<Key, Value> ParentifiedTree<Key, Value, NodeId> for ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     fn get_parent_id(&self, node_id: NodeId) -> Option<NodeId> {
         self.get_node_by_id(node_id).and_then(|node| node.parent_id)
@@ -278,8 +284,11 @@ where
 impl<Key, Value> RotatableTree<Key, Value, NodeId> for ArrayBST<Key, Value>
 where
     Key: Ord,
+    Value: Clone,
 {
     fn right_rotate(&mut self, node_id: NodeId) {
+        println!("RIGHT ROTATION");
+
         let son_id = self.get_left_son_id(node_id).expect("Son not found");
         let sons_right_son = self
             .get_node_by_id(son_id)
@@ -314,6 +323,8 @@ where
     }
 
     fn left_rotate(&mut self, node_id: NodeId) {
+        println!("LEFT ROTATION");
+
         let son_id = self.get_right_son_id(node_id).expect("Son not found");
         let sons_left_son_id = self
             .get_node_by_id(son_id)
@@ -357,7 +368,7 @@ fn stringify_subtree<Key, Value>(
 ) -> String
 where
     Key: Ord + std::fmt::Display,
-    Value: std::fmt::Display,
+    Value: Clone + std::fmt::Display,
 {
     if depth > 100 || node_id.node_ndx >= array.len() {
         return format!("{}{} NIL\n", prefix, if is_left { "├──" } else { "└──" });
@@ -404,7 +415,7 @@ where
 impl<Key, Value> std::fmt::Display for ArrayBST<Key, Value>
 where
     Key: Ord + std::fmt::Display,
-    Value: std::fmt::Display,
+    Value: Clone + std::fmt::Display,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         if let Some(root_id) = self.get_root_id() {
@@ -449,7 +460,7 @@ mod tests {
         for (key, val) in pairs {
             let found = tree.get(&key);
             assert!(found.is_some());
-            assert_eq!(*found.unwrap(), val);
+            assert_eq!(found.unwrap(), val);
         }
 
         for non_existent in 1000..2000 {
