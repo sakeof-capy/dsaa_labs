@@ -274,8 +274,95 @@ public:
             .value_or(false);
     }
 
-    void left_rotate(NodeId node_id);
-    void right_rotate(NodeId node_id);
+    void left_rotate(NodeId node_id)
+    {
+        const NodeId son_id = this->get_right_son_id(node_id).value();
+        const std::optional<NodeId> sons_left_son_id = this->get_left_son_id(son_id);
+        const bool is_left_son = this->is_left_son(node_id);
+
+        node_t& node = this->get_node_by_id(node_id);
+        const std::optional<NodeId> node_parent_id_opt = node.parent_id;
+
+        node.parent_id = son_id;
+        node.right_son_id = sons_left_son_id;
+
+        try
+        {
+            node_t& son = this->get_node_by_id(son_id);
+            son.parent_id = node_parent_id_opt;
+            son.left_son_id = node_id;
+        }
+        catch(...) {}
+
+        if (node_parent_id_opt.has_value())
+        {
+            const NodeId node_parent_id = node_parent_id_opt.value();
+
+            try
+            {
+                node_t& parent = this->get_node_by_id(node_parent_id);
+
+                if (is_left_son)
+                {
+                    parent.left_son_id = son_id;
+                }
+                else
+                {
+                    parent.right_son_id = son_id;
+                }
+            }
+            catch(...) {}
+
+            return;
+        }
+
+        this->root_id_ = son_id;
+    }
+
+    void right_rotate(NodeId node_id)
+    {
+        const NodeId son_id = this->get_left_son_id(node_id).value();
+        const std::optional<NodeId> sons_right_son_id = this->get_right_son_id(son_id);
+        const bool is_left_son = this->is_left_son(node_id);
+
+        node_t& node = this->get_node_by_id(node_id);
+        const std::optional<NodeId> node_parent_id_opt = node.parent_id;
+
+        node.parent_id = son_id;
+        node.left_son_id = sons_right_son_id;
+
+        try
+        {
+            node_t& son = this->get_node_by_id(son_id);
+            son.parent_id = node_parent_id_opt;
+            son.right_son_id = node_id;
+        }
+        catch(...) {}
+
+        if (node_parent_id_opt.has_value())
+        {
+            const NodeId node_parent_id = node_parent_id_opt.value();
+
+            try
+            {
+                node_t& parent = this->get_node_by_id(node_parent_id);
+
+                if (is_left_son)
+                {
+                    parent.left_son_id = son_id;
+                }
+                else
+                {
+                    parent.right_son_id = son_id;
+                }
+            }
+            catch(...) {}
+
+            return;
+        }
+
+        this->root_id_ = son_id;
+    }
 
 private:
     InsertionResult find_insertion_place(const Key& key) const
@@ -331,12 +418,12 @@ private:
         return this->array_.at(node_id.node_ndx);
     }
 
-    Node<Key, Value>& get_node_by_id(NodeId node_id)
+    node_t& get_node_by_id(NodeId node_id)
     {
         return this->array_.at(node_id.node_ndx);
     }
 
-    const Node<Key, Value>& get_root_node() const
+    const node_t& get_root_node() const
     {
         if (!this->root_id_.has_value())
         {
