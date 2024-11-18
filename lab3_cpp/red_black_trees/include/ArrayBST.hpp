@@ -104,9 +104,11 @@ public:
             switch (son_type)
             {
                 case SonType::Left:
+                    std::cout << "Inserting " << key << " as left son\n";
                     parent.left_son_id = id_to_insert;
                     break;
                 case SonType::Right:
+                    std::cout << "Inserting " << key << " as right son\n";
                     parent.right_son_id = id_to_insert;
                     break;
                 default:
@@ -208,20 +210,40 @@ public:
         return this->extract_node_by_id_opt(std::move(parent_id_opt), "Parent not found");
     }
 
-    std::optional<NodeId> get_left_uncle_id(NodeId node_id) const;
-    // {
-    //     this->get_parent_id(node_id)
-    //         .and_then([this](NodeId parent_id) {
-    //             return this->get_parent_id(parent_id);
-    //         })
-    //         .and_then([](NodeId grand_parent_id) {
-    //             return
-    //         });
-    // }
+    std::optional<NodeId> get_left_uncle_id(NodeId node_id) const
+    {
+        return this->get_parent_id(node_id)
+            .and_then([this](const NodeId parent_id) {
+                return this->get_parent_id(parent_id);
+            })
+            .and_then([this](const NodeId grand_parent_id) {
+                return this->get_left_son_id(grand_parent_id);
+            });
+    }
 
-    std::optional<NodeId> get_right_uncle_id(NodeId node_id) const;
-    Value& get_left_uncle(NodeId node_id);
-    Value& get_right_uncle(NodeId node_id);
+    std::optional<NodeId> get_right_uncle_id(NodeId node_id) const
+    {
+        return this->get_parent_id(node_id)
+            .and_then([this](const NodeId parent_id) {
+                return this->get_parent_id(parent_id);
+            })
+            .and_then([this](const NodeId grand_parent_id) {
+                return this->get_right_son_id(grand_parent_id);
+            });
+    }
+
+    Value& get_left_uncle(NodeId node_id)
+    {
+        std::optional<NodeId> left_uncle_id_opt = get_left_uncle_id(node_id);
+        return extract_node_by_id_opt(std::move(left_uncle_id_opt), "Left uncle not found");
+    }
+
+    Value& get_right_uncle(NodeId node_id)
+    {
+        std::optional<NodeId> right_uncle_id_opt = get_right_uncle_id(node_id);
+        return extract_node_by_id_opt(std::move(right_uncle_id_opt), "Right uncle not found");
+    }
+
     bool is_left_son(NodeId node_id) const;
     bool is_right_son(NodeId node_id) const;
 

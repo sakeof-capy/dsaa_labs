@@ -1,6 +1,7 @@
-#include "../include/ArrayBST.hpp"
 #include <cassert>
 #include <iostream>
+
+#include "../include/ArrayBST.hpp"
 
 int main()
 {
@@ -23,4 +24,8 @@ int main()
     std::cout << "Root: " << tree.get_root() << std::endl;
     std::cout << "Right Son of Root: " << tree.get_right_son(*tree.get_root_id()) << std::endl;
     std::cout << "Left Son of Root: " << tree.get_left_son(*tree.get_root_id()) << std::endl;
+    std::cout << "Right Son of Right Son of Root: " <<
+        tree.get_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
+    std::cout << "Left uncle of the Right Son of Right Son of Root: " <<
+        tree.get_left_uncle(*tree.get_right_son_id(*tree.get_right_son_id(*tree.get_root_id()))) << std::endl;
 }
