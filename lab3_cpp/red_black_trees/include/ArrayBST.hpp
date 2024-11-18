@@ -6,8 +6,6 @@
 #include <utility>
 #include <vector>
 
-
-
 struct NodeId
 {
 public:
@@ -47,7 +45,7 @@ public:
 public:
     void insert(Key&& key, Value&& value)
     {
-        insert_and_get_id(std::move(key), std::move(value));
+        static_cast<void>(insert_and_get_id(std::move(key), std::move(value)));
     }
 
     const Value& get(const Key& key) const
@@ -129,19 +127,98 @@ public:
         return inserted_node_id;
     }
 
-    const Value& get_by_id(NodeId node_id) const;
-    Value& get_by_id(NodeId node_id);
-    std::optional<NodeId> get_left_son_id(NodeId node_id) const;
-    std::optional<NodeId> get_right_son_id(NodeId node_id) const;
-    Value& get_left_son(NodeId node_id);
-    Value& get_right_son(NodeId node_id);
-    std::optional<NodeId> get_root_id() const;
-    Value& get_root();
+    const Value& get_by_id(const NodeId node_id) const
+    {
+        return this->get_node_by_id(node_id).val;
+    }
 
-    std::optional<NodeId> get_parent_id(NodeId node_id) const;
-    Value& get_parent(NodeId node_id);
-    const Value& get_parent(NodeId node_id) const;
+    Value& get_by_id(const NodeId node_id)
+    {
+        return this->get_node_by_id(node_id).val;
+    }
+
+    std::optional<NodeId> get_left_son_id(const NodeId node_id) const
+    {
+        try
+        {
+            return this->get_node_by_id(node_id).left_son_id;
+        }
+        catch (const std::out_of_range&)
+        {
+            return std::nullopt;
+        }
+    }
+
+    std::optional<NodeId> get_right_son_id(const NodeId node_id) const
+    {
+        try
+        {
+            return this->get_node_by_id(node_id).right_son_id;
+        }
+        catch (const std::out_of_range&)
+        {
+            return std::nullopt;
+        }
+    }
+
+    Value& get_left_son(const NodeId node_id)
+    {
+        std::optional<NodeId> left_son_id_opt = this->get_left_son_id(node_id);
+        return this->extract_node_by_id_opt(std::move(left_son_id_opt), "Left son not found");
+    }
+
+    Value& get_right_son(const NodeId node_id)
+    {
+        std::optional<NodeId> right_son_id_opt = this->get_right_son_id(node_id);
+        return this->extract_node_by_id_opt(std::move(right_son_id_opt), "Right son not found");
+    }
+
+    std::optional<NodeId> get_root_id() const
+    {
+        return this->root_id_;
+    }
+
+    Value& get_root()
+    {
+        std::optional<NodeId> root_id = this->get_root_id();
+        return extract_node_by_id_opt(std::move(root_id), "Root not found");
+    }
+
+    std::optional<NodeId> get_parent_id(const NodeId node_id) const
+    {
+        try
+        {
+            return this->get_node_by_id(node_id).parent_id;
+        }
+        catch (const std::out_of_range&)
+        {
+            return std::nullopt;
+        }
+    }
+
+    Value& get_parent(const NodeId node_id)
+    {
+        std::optional<NodeId> parent_id_opt = this->get_parent_id(node_id);
+        return this->extract_node_by_id_opt(std::move(parent_id_opt), "Parent not found");
+    }
+
+    const Value& get_parent(const NodeId node_id) const
+    {
+        std::optional<NodeId> parent_id_opt = this->get_parent_id(node_id);
+        return this->extract_node_by_id_opt(std::move(parent_id_opt), "Parent not found");
+    }
+
     std::optional<NodeId> get_left_uncle_id(NodeId node_id) const;
+    // {
+    //     this->get_parent_id(node_id)
+    //         .and_then([this](NodeId parent_id) {
+    //             return this->get_parent_id(parent_id);
+    //         })
+    //         .and_then([](NodeId grand_parent_id) {
+    //             return
+    //         });
+    // }
+
     std::optional<NodeId> get_right_uncle_id(NodeId node_id) const;
     Value& get_left_uncle(NodeId node_id);
     Value& get_right_uncle(NodeId node_id);
@@ -223,6 +300,26 @@ private:
     bool node_with_id_exists(NodeId node_id) const
     {
         return node_id.node_ndx < this->array_.size();
+    }
+
+    Value& extract_node_by_id_opt(std::optional<NodeId>&& node_id_opt, const char* err_msg)
+    {
+        if (!node_id_opt.has_value())
+        {
+            throw std::invalid_argument(err_msg);
+        }
+
+        return this->get_by_id(node_id_opt.value());
+    }
+
+    const Value& extract_node_by_id_opt(std::optional<NodeId>&& node_id_opt, const char* err_msg) const
+    {
+        if (!node_id_opt.has_value())
+        {
+            throw std::invalid_argument(err_msg);
+        }
+
+        return this->get_by_id(node_id_opt.value());
     }
 
 private:

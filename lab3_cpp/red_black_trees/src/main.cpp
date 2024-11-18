@@ -19,4 +19,8 @@ int main()
     std::cout << tree.get(2) << std::endl;
     std::cout << tree.get(3) << std::endl;
     std::cout << tree.get(-1) << std::endl;
+
+    std::cout << "Root: " << tree.get_root() << std::endl;
+    std::cout << "Right Son of Root: " << tree.get_right_son(*tree.get_root_id()) << std::endl;
+    std::cout << "Left Son of Root: " << tree.get_left_son(*tree.get_root_id()) << std::endl;
 }
