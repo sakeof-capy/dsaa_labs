@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell, RefMut};
 use std::rc::{Rc, Weak};
 use crate::traits::{NodeIdentifiableTree, ParentifiedTree, RotatableTree, Tree};
 
@@ -17,7 +17,7 @@ impl<Key, Value> NodeId<Key, Value> {
 
 struct Node<Key, Value> {
     key: Key,
-    val: Value,
+    val: RefCell<Value>,
     // id: NodeId<Key, Value>,
     parent_id: Option<NodeId<Key, Value>>,
     left_son_id: Option<Rc<RefCell<Node<Key, Value>>>>,
@@ -88,7 +88,7 @@ where
             InsertionPlace::NodeAlreadyExists(node_id) => {
                 node_id.node
                     .upgrade()
-                    .map(|node| node.borrow().val.clone())
+                    .map(|node| node.borrow().val.borrow().clone())
             }
             _ => None,
         }
@@ -109,7 +109,7 @@ where
             InsertionPlace::Root => {
                 self.root = Some(Rc::new(RefCell::new(Node {
                     key,
-                    val,
+                    val: RefCell::new(val),
                     parent_id: None,
                     left_son_id: None,
                     right_son_id: None,
@@ -123,7 +123,7 @@ where
                 let parent = parent_id.node.upgrade().expect("This Rc must live longer!");
                 let new_node = Rc::new(RefCell::new(Node {
                     key,
-                    val,
+                    val: RefCell::new(val),
                     parent_id: Some(parent_id),
                     left_son_id: None,
                     right_son_id: None,
@@ -145,7 +145,7 @@ where
             InsertionPlace::NodeAlreadyExists(node_id) => {
                 let node = node_id.node.upgrade().expect("This Rc must live longer!");
                 node.borrow_mut().key = key;
-                node.borrow_mut().val = val;
+                *node.borrow_mut().val.borrow_mut() = val;
                 node_id
             }
         };
@@ -153,11 +153,24 @@ where
         inserted_node_id
     }
 
-    fn get_by_id(&self, node_id: NodeId<Key, Value>) -> Option<&Value> {
-        todo!()
+    fn get_by_id(&self, node_id: NodeId<Key, Value>) -> Option<Ref<Value>> {
+        // node_id
+        //     .node
+        //     .upgrade()
+        //     .map(|node| Ref::map(node.borrow(), |inner| &inner.val))
+
+        if let Some(node) = node_id.node.upgrade() {
+            Some(node.borrow().val.borrow())
+        } else {
+            None
+        }
     }
 
-    fn get_by_id_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<&mut Value> {
+    fn get_by_id_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<RefMut<Value>> {
+        // node_id
+        //     .node
+        //     .upgrade()
+        //     .map(|node| RefMut::map(node.borrow_mut(), |inner| &mut inner.val))
         todo!()
     }
 
@@ -173,21 +186,21 @@ where
         todo!()
     }
 
-    fn get_left_son_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<&mut Value> {
+    fn get_left_son_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<RefMut<Value>> {
         todo!()
     }
 
-    fn get_right_son_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<&mut Value> {
+    fn get_right_son_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<RefMut<Value>> {
         todo!()
     }
 
-    fn get_root_mut(&mut self) -> Option<&mut Value> {
+    fn get_root_mut(&mut self) -> Option<RefMut<Value>> {
         todo!()
     }
 
     fn modify<F>(&mut self, node_id: NodeId<Key, Value>, modifier: F)
     where
-        F: FnMut(&mut Value)
+        F: FnMut(RefMut<Value>)
     {
         todo!()
     }
@@ -202,11 +215,11 @@ where
         todo!()
     }
 
-    fn get_parent(&mut self, node_id: NodeId<Key, Value>) -> Option<&Value> {
+    fn get_parent(&mut self, node_id: NodeId<Key, Value>) -> Option<Ref<Value>> {
         todo!()
     }
 
-    fn get_parent_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<&mut Value> {
+    fn get_parent_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<RefMut<Value>> {
         todo!()
     }
 
@@ -218,11 +231,11 @@ where
         todo!()
     }
 
-    fn get_left_uncle_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<&mut Value> {
+    fn get_left_uncle_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<RefMut<Value>> {
         todo!()
     }
 
-    fn get_right_uncle_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<&mut Value> {
+    fn get_right_uncle_mut(&mut self, node_id: NodeId<Key, Value>) -> Option<RefMut<Value>> {
         todo!()
     }
 

@@ -1,3 +1,4 @@
+use std::cell::{Ref, RefCell, RefMut};
 use crate::array_bst::InsertionPlace::NodeAlreadyExists;
 use crate::traits::{NodeIdentifiableTree, ParentifiedTree, RotatableTree};
 use crate::Tree;
@@ -10,7 +11,7 @@ pub struct NodeId {
 #[derive(Default)]
 struct Node<Key, Value> {
     key: Key,
-    val: Value,
+    val: RefCell<Value>,
     id: NodeId,
     parent_id: Option<NodeId>,
     left_son_id: Option<NodeId>,
@@ -105,7 +106,7 @@ where
     fn get(&self, key: &Key) -> Option<Value> {
         match self.find_insertion_place(key) {
             InsertionPlace::NodeAlreadyExists(node_id) => {
-                self.get_node_by_id(node_id).map(|node| node.val.clone())
+                self.get_node_by_id(node_id).map(|node| node.val.borrow().clone())
             }
             _ => None,
         }
@@ -129,7 +130,7 @@ where
 
                 self.array.push(Node {
                     key,
-                    val,
+                    val: RefCell::new(val),
                     id: inserted_node_id,
                     parent_id: None,
                     left_son_id: None,
@@ -145,7 +146,7 @@ where
 
                 self.array.push(Node {
                     key,
-                    val,
+                    val: RefCell::new(val),
                     id: inserted_node_id,
                     parent_id: Some(parent_id),
                     left_son_id: None,
@@ -169,7 +170,7 @@ where
             }
             InsertionPlace::NodeAlreadyExists(node_id) => {
                 let node = self.get_node_by_id_mut(node_id).expect("Node not found");
-                node.val = val;
+                *node.val.borrow_mut() = val;
                 node.id
             }
         };
@@ -179,12 +180,12 @@ where
         inserted_node_id
     }
 
-    fn get_by_id(&self, node_id: NodeId) -> Option<&Value> {
-        self.get_node_by_id(node_id).map(|node| &node.val)
+    fn get_by_id(&self, node_id: NodeId) -> Option<Ref<Value>> {
+        self.get_node_by_id(node_id).map(|node| node.val.borrow())
     }
 
-    fn get_by_id_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
-        self.get_node_by_id_mut(node_id).map(|node| &mut node.val)
+    fn get_by_id_mut(&mut self, node_id: NodeId) -> Option<RefMut<Value>> {
+        self.get_node_by_id_mut(node_id).map(|node| node.val.borrow_mut())
     }
 
     fn get_left_son_id(&self, node_id: NodeId) -> Option<NodeId> {
@@ -201,24 +202,24 @@ where
         self.root_id
     }
 
-    fn get_left_son_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+    fn get_left_son_mut(&mut self, node_id: NodeId) -> Option<RefMut<Value>> {
         self.get_by_id_mut(self.get_left_son_id(node_id)?)
     }
 
-    fn get_right_son_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+    fn get_right_son_mut(&mut self, node_id: NodeId) -> Option<RefMut<Value>> {
         self.get_by_id_mut(self.get_right_son_id(node_id)?)
     }
 
-    fn get_root_mut(&mut self) -> Option<&mut Value> {
-        self.array.first_mut().map(|node| &mut node.val)
+    fn get_root_mut(&mut self) -> Option<RefMut<Value>> {
+        self.array.first_mut().map(|node| node.val.borrow_mut())
     }
 
     fn modify<F>(&mut self, node_id: NodeId, mut modifier: F)
     where
-        F: FnMut(&mut Value),
+        F: FnMut(RefMut<Value>),
     {
         if let Some(node) = self.get_node_by_id_mut(node_id) {
-            modifier(&mut node.val);
+            modifier(node.val.borrow_mut());
         }
     }
 }
@@ -232,12 +233,12 @@ where
         self.get_node_by_id(node_id).and_then(|node| node.parent_id)
     }
 
-    fn get_parent(&mut self, node_id: NodeId) -> Option<&Value> {
+    fn get_parent(&mut self, node_id: NodeId) -> Option<Ref<Value>> {
         self.get_parent_id(node_id)
             .and_then(|parent_id| self.get_by_id(parent_id))
     }
 
-    fn get_parent_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+    fn get_parent_mut(&mut self, node_id: NodeId) -> Option<RefMut<Value>> {
         self.get_parent_id(node_id)
             .and_then(|parent_id| self.get_by_id_mut(parent_id))
     }
@@ -256,12 +257,12 @@ where
             .and_then(|node| node.right_son_id)
     }
 
-    fn get_left_uncle_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+    fn get_left_uncle_mut(&mut self, node_id: NodeId) -> Option<RefMut<Value>> {
         self.get_left_uncle_id(node_id)
             .and_then(|uncle_id| self.get_by_id_mut(uncle_id))
     }
 
-    fn get_right_uncle_mut(&mut self, node_id: NodeId) -> Option<&mut Value> {
+    fn get_right_uncle_mut(&mut self, node_id: NodeId) -> Option<RefMut<Value>> {
         self.get_right_uncle_id(node_id)
             .and_then(|uncle_id| self.get_by_id_mut(uncle_id))
     }
@@ -380,7 +381,7 @@ where
         prefix,
         if is_left { "├──" } else { "└──" },
         node.key,
-        node.val
+        node.val.bor
     );
 
     let child_prefix = format!("{}{}", prefix, if is_left { "│   " } else { "    " });

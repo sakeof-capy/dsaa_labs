@@ -2,14 +2,14 @@
 
 use crate::array_bst::ArrayBST;
 use crate::red_black_tree::RedBlackTree;
-use crate::traits::{NodeIdentifiableTree, RotatableTree, Tree};
+use crate::traits::Tree;
 
 mod array_bst;
 mod red_black_tree;
 mod traits;
 mod list_bst;
 
-pub type ArrayRedBlackTree<Key, Value> = RedBlackTree<
+pub type ArrayRedBlackTree<'l, Key, Value> = RedBlackTree<
     Key,
     Value,
     ArrayBST<Key, red_black_tree::Data<Value>>,
