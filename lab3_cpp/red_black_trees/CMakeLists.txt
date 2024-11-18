@@ -1,1 +1,2 @@
-add_executable(main src/main.cpp)
+add_executable(main src/main.cpp
+        include/RedBlackTree.hpp)

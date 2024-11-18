@@ -372,9 +372,74 @@ private:
     }
 
 private:
+    template<typename KKey, typename VValue>
+    friend std::ostream& operator<<(std::ostream& os, const ArrayBST<KKey, VValue>& bst);
+
+private:
     std::vector<Node<Key, Value>> array_;
     std::optional<NodeId> root_id_;
 };
+
+#include <iostream>
+#include <sstream>
+#include <string>
+
+template<typename Key, typename Value>
+std::string stringify_subtree(
+    const NodeId& node_id,
+    const std::vector<Node<Key, Value>>& array,
+    const std::string& prefix,
+    bool is_left,
+    size_t depth)
+{
+    // Base case: Prevent excessive recursion or out-of-bounds access
+    if (depth > 100 || node_id.node_ndx >= array.size()) {
+        return prefix + (is_left ? "|-" : "|_") + " NIL\n";
+    }
+
+    const auto& node = array[node_id.node_ndx];
+    std::ostringstream result;
+
+    // Current node representation
+    result << prefix
+           << (is_left ? "|--" : "|__")
+           << " " << node.key << " -> " << node.val << "\n";
+
+    // Update the prefix for child nodes
+    std::string child_prefix = prefix + (is_left ? "|   " : "    ");
+
+    // Process left child
+    if (node.left_son_id.has_value()) {
+        result << stringify_subtree(node.left_son_id.value(), array, child_prefix, true, depth + 1);
+    } else {
+        result << child_prefix << "|-- NIL\n";
+    }
+
+    // Process right child
+    if (node.right_son_id.has_value()) {
+        result << stringify_subtree(node.right_son_id.value(), array, child_prefix, false, depth + 1);
+    } else {
+        result << child_prefix << "|__ NIL\n";
+    }
+
+    return result.str();
+}
+
+template<typename Key, typename Value>
+std::ostream& operator<<(std::ostream& os, const ArrayBST<Key, Value>& bst) {
+    if (bst.get_root_id().has_value()) {
+        os << stringify_subtree(
+            bst.get_root_id().value(),
+            bst.array_,
+            "",
+            false,
+            0
+        );
+    } else {
+        os << "NIL\n";
+    }
+    return os;
+}
 
 /*
 void insert(Key&& key, Value&& value);
