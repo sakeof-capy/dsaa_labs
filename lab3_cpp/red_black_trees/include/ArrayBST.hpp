@@ -5,12 +5,18 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <pstl/execution_defs.h>
 
 struct NodeId
 {
 public:
     std::size_t node_ndx;
 };
+
+inline bool operator==(const NodeId lhs, const NodeId rhs)
+{
+    return lhs.node_ndx == rhs.node_ndx;
+}
 
 template<typename Key, typename Value>
 struct Node
@@ -244,8 +250,29 @@ public:
         return extract_node_by_id_opt(std::move(right_uncle_id_opt), "Right uncle not found");
     }
 
-    bool is_left_son(NodeId node_id) const;
-    bool is_right_son(NodeId node_id) const;
+    bool is_left_son(const NodeId node_id) const
+    {
+        return this->get_parent_id(node_id)
+            .and_then([this](const NodeId parent_id) {
+                return this->get_left_son_id(parent_id);
+            })
+            .and_then([this, node_id](const NodeId left_son_id) {
+                return std::optional(left_son_id == node_id);
+            })
+            .value_or(false);
+    }
+
+    bool is_right_son(NodeId node_id) const
+    {
+        return this->get_parent_id(node_id)
+            .and_then([this](const NodeId parent_id) {
+                return this->get_right_son_id(parent_id);
+            })
+            .and_then([this, node_id](const NodeId right_son_id) {
+                return std::optional(right_son_id == node_id);
+            })
+            .value_or(false);
+    }
 
     void left_rotate(NodeId node_id);
     void right_rotate(NodeId node_id);

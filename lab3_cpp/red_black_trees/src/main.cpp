@@ -28,4 +28,9 @@ int main()
         tree.get_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
     std::cout << "Left uncle of the Right Son of Right Son of Root: " <<
         tree.get_left_uncle(*tree.get_right_son_id(*tree.get_right_son_id(*tree.get_root_id()))) << std::endl;
+
+    std::cout << "Is right son of root a left son: " << tree.is_left_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
+    std::cout << "Is left son of root a left son: " << tree.is_left_son(*tree.get_left_son_id(*tree.get_root_id())) << std::endl;
+    std::cout << "Is right son of root a right son: " << tree.is_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
+    std::cout << "Is left son of root a right son: " << tree.is_right_son(*tree.get_left_son_id(*tree.get_root_id())) << std::endl;
 }
