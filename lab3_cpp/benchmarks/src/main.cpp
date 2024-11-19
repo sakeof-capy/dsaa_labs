@@ -1,10 +1,8 @@
-#include "../include/benchmarks.hpp"
+#include "../include/bst_benchmarks.hpp"
 
-BENCHMARK(BM_array_tree_insertion);
-BENCHMARK(BM_list_tree_insertion);
-// BENCHMARK(BM_array_tree_search);
-// BENCHMARK(BM_list_tree_search);
-// BENCHMARK(BM_array_tree_deletion);
-// BENCHMARK(BM_list_tree_deletion);
+BENCHMARK(BM_array_bst_insertion);
+BENCHMARK(BM_linked_bst_insertion);
+BENCHMARK(BM_array_bst_search);
+BENCHMARK(BM_linked_bst_search);
 
 BENCHMARK_MAIN();
