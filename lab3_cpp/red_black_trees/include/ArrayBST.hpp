@@ -5,6 +5,9 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <ostream>
+#include <sstream>
+#include <string>
 
 struct NodeId
 {
@@ -22,7 +25,6 @@ struct Node
 {
     Key key;
     Value val;
-    NodeId id{};
     std::optional<NodeId> parent_id;
     std::optional<NodeId> left_son_id;
     std::optional<NodeId> right_son_id;
@@ -81,7 +83,6 @@ public:
             this->array_.push_back(node_t {
                 .key = std::move(key),
                 .val = std::move(value),
-                .id = id_to_insert,
                 .parent_id = std::nullopt,
                 .left_son_id = std::nullopt,
                 .right_son_id = std::nullopt,
@@ -98,7 +99,6 @@ public:
             this->array_.push_back(node_t {
                 .key = std::move(key),
                 .val = std::move(value),
-                .id = id_to_insert,
                 .parent_id = parent_id,
                 .left_son_id = std::nullopt,
                 .right_son_id = std::nullopt,
@@ -464,10 +464,6 @@ private:
     std::optional<NodeId> root_id_;
 };
 
-#include <iostream>
-#include <sstream>
-#include <string>
-
 template<typename Key, typename Value>
 std::string stringify_subtree(
     const NodeId& node_id,
@@ -526,7 +522,7 @@ std::ostream& operator<<(std::ostream& os, const ArrayBST<Key, Value>& bst) {
 }
 
 /*
-void insert(Key&& key, Value&& value);
+    void insert(Key&& key, Value&& value);
     const Value& get(const Key& key) const;
 
     NodeId insert_and_get_id(Key&& key, Value&& value);
