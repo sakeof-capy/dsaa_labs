@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
-#include <pstl/execution_defs.h>
 
 struct NodeId
 {
@@ -76,7 +75,7 @@ public:
 
         if (result.root)
         {
-            const NodeId id_to_insert = NodeId { .node_ndx = 0 };
+            constexpr NodeId id_to_insert = NodeId { .node_ndx = 0 };
             this->root_id_ = id_to_insert;
 
             this->array_.push_back(node_t {
@@ -110,11 +109,9 @@ public:
             switch (son_type)
             {
                 case SonType::Left:
-                    std::cout << "Inserting " << key << " as left son\n";
                     parent.left_son_id = id_to_insert;
                     break;
                 case SonType::Right:
-                    std::cout << "Inserting " << key << " as right son\n";
                     parent.right_son_id = id_to_insert;
                     break;
                 default:

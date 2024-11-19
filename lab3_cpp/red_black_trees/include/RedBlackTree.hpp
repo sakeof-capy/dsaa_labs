@@ -79,7 +79,7 @@ private:
 
 public:
     void insert(Key&& key, Value&& value) {
-        NodeId inserted_id = bst_.insert_and_get_id(
+        const NodeId inserted_id = bst_.insert_and_get_id(
             std::move(key),
             RBNode { .value = std::move(value), .color = Color::Red }
         );
