@@ -8,7 +8,15 @@ int main()
 {
     // Red-Black Tree
     RedBlackTree<int, int> rbtree;
+    rbtree.insert(8, 13);
     rbtree.insert(5, 13);
+    rbtree.insert(15, 13);
+    rbtree.insert(12, 13);
+    rbtree.insert(19, 13);
+    rbtree.insert(9, 13);
+    rbtree.insert(13, 13);
+    rbtree.insert(23, 13);
+    rbtree.insert(10, 13);
 
     std::cout << "RBTree:\n" << rbtree << std::endl;
 
