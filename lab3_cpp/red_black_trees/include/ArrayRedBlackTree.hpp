@@ -91,6 +91,14 @@ public:
         return bst_.get(key).value;
     }
 
+    std::optional<std::tuple<Key, Value, Color>> min_elem() const
+    {
+        return bst_.get_min_elem()
+            .transform([](std::pair<Key, RBNode> pair) {
+                return std::tuple { pair.first, pair.second.value, pair.second.color };
+            });
+    }
+
 private:
     template<typename KKey, typename VValue>
     friend std::ostream& operator<<(std::ostream& os, const ArrayRedBlackTree<KKey, VValue>& bst);

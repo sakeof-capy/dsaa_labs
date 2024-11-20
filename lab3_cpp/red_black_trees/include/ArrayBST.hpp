@@ -362,6 +362,20 @@ public:
         this->root_id_ = son_id;
     }
 
+    std::optional<std::pair<Key, Value>> get_min_elem() const
+    {
+        const InsertionResult result = this->find_insertion_place(std::numeric_limits<Key>::min());
+
+        if (!result.son_of.has_value())
+        {
+            return std::nullopt;
+        }
+
+        auto [parent_id, _] = result.son_of.value();
+        const node_t& node = this->get_node_by_id(parent_id);
+        return std::pair { node.key, node.val };
+    }
+
 private:
     InsertionResult find_insertion_place(const Key& key) const
     {

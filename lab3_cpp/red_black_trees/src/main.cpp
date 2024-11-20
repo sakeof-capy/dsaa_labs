@@ -1,173 +1,38 @@
 #include <iostream>
-// #include "../include/ArrayRedBlackTree.hpp"
-#include "../include/LinkedRedBlackTree.hpp"
+#include "../include/ArrayRedBlackTree.hpp"
 
-void test_linked()
-{
-    // // Left rotation
-    // ArrayBST<int, int> tree;
-    // NodeId root_id = tree.insert_and_get_id(5, 13);
-    // tree.insert(4, 14);
-    // tree.insert(7, 15);
-    // tree.insert(8, 16);
-    // tree.insert(6, 17);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // tree.left_rotate(root_id);
-    //
-    // std::cout << "Rotated tree:\n" << tree << std::endl << std::endl;
+int main() {
+    int N;
 
-    // // Right rotation
-    // ArrayBST<int, int> tree;
-    // NodeId root_id = tree.insert_and_get_id(5, 13);
-    // tree.insert(3, 15);
-    // tree.insert(6, 16);
-    // tree.insert(1, 17);
-    // tree.insert(4, 18);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // tree.right_rotate(root_id);
-    //
-    // std::cout << "Rotated tree:\n" << tree << std::endl << std::endl;
+    std::cin >> N;
 
-    // LinkedBST<int, int> tree;
-    //
-    // NodeId root = tree.insert_and_get_id(1, 13);
-    // tree.insert(2, 14);
-    // tree.insert(3, 15);
-    // tree.insert(-1, 16);
-    //
-    // assert(tree.get(1) == 13);
-    // assert(tree.get(2) == 14);
-    // assert(tree.get(3) == 15);
-    // assert(tree.get(-1) == 16);
+    if (N <= 1 || N >= 256) {
+        std::cerr << "N must be in the range 1 < N < 256!" << std::endl;
+        return EXIT_FAILURE;
+    }
 
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
+    ArrayRedBlackTree<int, int> tree;
+    std::cout << "Initial tree:\n" << tree << std::endl;
 
-    // std::cout << tree.get(1) << std::endl;
-    // std::cout << tree.get(2) << std::endl;
-    // std::cout << tree.get(3) << std::endl;
-    // std::cout << tree.get(-1) << std::endl;
-    //
-    // std::cout << "Root: " << tree.get_root() << std::endl;
-    //
-    // std::cout << "Right Son of Root: " << tree.get_right_son(*tree.get_root_id()) << std::endl;
-    // std::cout << "Left Son of Root: " << tree.get_left_son(*tree.get_root_id()) << std::endl;
-    // std::cout << "Right Son of Right Son of Root: " <<
-    //     tree.get_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Left uncle of the Right Son of Right Son of Root: " <<
-    //     tree.get_left_uncle(*tree.get_right_son_id(*tree.get_right_son_id(*tree.get_root_id()))) << std::endl;
-    //
-    // std::cout << "Is right son of root a left son: " << tree.is_left_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Is left son of root a left son: " << tree.is_left_son(*tree.get_left_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Is right son of root a right son: " << tree.is_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Is left son of root a right son: " << tree.is_right_son(*tree.get_left_son_id(*tree.get_root_id())) << std::endl;
+    for (int i = 0; i < N; ++i) {
+        int key, val;
+        std::cin >> key >> val;
+        std::cout << "Inserting key = " << key << " value = " << val << std::endl;
+        tree.insert(+key, +val);
+        auto min_elem_opt = tree.min_elem();
 
-    // // Left rotation:
-    // LinkedBST<int, int> tree;
-    // const NodeId root_id = tree.insert_and_get_id(5, 13);
-    // tree.insert(4, 14);
-    // tree.insert(7, 15);
-    // tree.insert(8, 16);
-    // tree.insert(6, 17);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // tree.left_rotate(root_id);
-    //
-    // std::cout << "Rotated tree:\n" << tree << std::endl << std::endl;
+        if (min_elem_opt.has_value())
+        {
+            auto [min_key, min_val, min_clr] = min_elem_opt.value();
+            std::cout << "current minimal element = (" << min_key << ", " << min_val << ") of color " << min_clr <<std::endl;
+        }
+        else
+        {
+            std::cout << "there's no minimal element currently" <<std::endl;
+        }
 
-    // // Right Rotation
-    // LinkedBST<int, int> tree;
-    // const NodeId root_id = tree.insert_and_get_id(5, 13);
-    // tree.insert(3, 15);
-    // tree.insert(6, 16);
-    // tree.insert(1, 17);
-    // tree.insert(4, 18);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // tree.right_rotate(root_id);
-    //
-    // std::cout << "Rotated tree:\n" << tree << std::endl << std::endl;
+        std::cout << "current tree:\n" << tree << std::endl;
+    }
 
-}
-
-int main()
-{
-    test_linked();
-    // // Red-Black Tree
-    LinkedRedBlackTree<int, int> rbtree;
-    rbtree.insert(8, 13);
-    rbtree.insert(5, 13);
-    rbtree.insert(15, 13);
-    rbtree.insert(12, 13);
-    rbtree.insert(19, 13);
-    rbtree.insert(9, 13);
-    rbtree.insert(13, 13);
-    rbtree.insert(23, 13);
-    rbtree.insert(10, 13);
-
-    std::cout << "RBTree:\n" << rbtree << std::endl;
-
-    // // Left rotation
-    // ArrayBST<int, int> tree;
-    // NodeId root_id = tree.insert_and_get_id(5, 13);
-    // tree.insert(4, 14);
-    // tree.insert(7, 15);
-    // tree.insert(8, 16);
-    // tree.insert(6, 17);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // tree.left_rotate(root_id);
-    //
-    // std::cout << "Rotated tree:\n" << tree << std::endl << std::endl;
-
-    // // Right rotation
-    // ArrayBST<int, int> tree;
-    // NodeId root_id = tree.insert_and_get_id(5, 13);
-    // tree.insert(3, 15);
-    // tree.insert(6, 16);
-    // tree.insert(1, 17);
-    // tree.insert(4, 18);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // tree.right_rotate(root_id);
-    //
-    // std::cout << "Rotated tree:\n" << tree << std::endl << std::endl;
-
-    // ArrayBST<int, int> tree;
-    // tree.insert(1, 13);
-    // tree.insert(2, 14);
-    // tree.insert(3, 15);
-    // tree.insert(-1, 16);
-    //
-    // assert(tree.get(1) == 13);
-    // assert(tree.get(2) == 14);
-    // assert(tree.get(3) == 15);
-    // assert(tree.get(-1) == 16);
-    //
-    // std::cout << "The tree:\n" << tree << std::endl << std::endl;
-    //
-    // std::cout << tree.get(1) << std::endl;
-    // std::cout << tree.get(2) << std::endl;
-    // std::cout << tree.get(3) << std::endl;
-    // std::cout << tree.get(-1) << std::endl;
-    //
-    // std::cout << "Root: " << tree.get_root() << std::endl;
-    // std::cout << "Right Son of Root: " << tree.get_right_son(*tree.get_root_id()) << std::endl;
-    // std::cout << "Left Son of Root: " << tree.get_left_son(*tree.get_root_id()) << std::endl;
-    // std::cout << "Right Son of Right Son of Root: " <<
-    //     tree.get_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Left uncle of the Right Son of Right Son of Root: " <<
-    //     tree.get_left_uncle(*tree.get_right_son_id(*tree.get_right_son_id(*tree.get_root_id()))) << std::endl;
-    //
-    // std::cout << "Is right son of root a left son: " << tree.is_left_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Is left son of root a left son: " << tree.is_left_son(*tree.get_left_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Is right son of root a right son: " << tree.is_right_son(*tree.get_right_son_id(*tree.get_root_id())) << std::endl;
-    // std::cout << "Is left son of root a right son: " << tree.is_right_son(*tree.get_left_son_id(*tree.get_root_id())) << std::endl;
+    return EXIT_SUCCESS;
 }
