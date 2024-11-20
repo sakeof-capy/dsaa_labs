@@ -1,12 +1,13 @@
 #ifndef REDBLACKTREE_HPP
 #define REDBLACKTREE_HPP
 
+#include <utility>
 #include "ArrayBST.hpp"
 
 enum class Color { Red, Black };
 
 template<typename Key, typename Value>
-class RedBlackTree {
+class ArrayRedBlackTree {
 private:
     struct RBNode {
         Value value;
@@ -92,7 +93,7 @@ public:
 
 private:
     template<typename KKey, typename VValue>
-    friend std::ostream& operator<<(std::ostream& os, const RedBlackTree<KKey, VValue>& bst);
+    friend std::ostream& operator<<(std::ostream& os, const ArrayRedBlackTree<KKey, VValue>& bst);
 
     friend std::ostream& operator<<(std::ostream& os, const RBNode& node)
     {
@@ -105,12 +106,12 @@ private:
 
 
 template<typename Key, typename Value>
-std::ostream& operator<<(std::ostream& os, const RedBlackTree<Key, Value>& bst)
+std::ostream& operator<<(std::ostream& os, const ArrayRedBlackTree<Key, Value>& bst)
 {
     return os << bst.bst_;
 }
 
-std::ostream& operator<<(std::ostream& os, const Color& clr)
+inline std::ostream& operator<<(std::ostream& os, const Color& clr)
 {
     switch (clr)
     {

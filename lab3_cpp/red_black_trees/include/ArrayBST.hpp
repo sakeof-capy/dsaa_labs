@@ -48,6 +48,7 @@ class ArrayBST
 {
 public:
     using node_t = Node<Key, Value>;
+    using NodeId = NodeId;
 
 public:
     void insert(Key&& key, Value&& value)

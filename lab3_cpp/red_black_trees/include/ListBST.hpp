@@ -90,19 +90,19 @@ public:
 
     const Value& get_by_id(const NodeId node_id) const
     {
-        return this->get_node_by_id(node_id)->val;
+        return this->get_node_by_id(node_id, "get_by_id")->val;
     }
 
     Value& get_by_id(const NodeId node_id)
     {
-        return this->get_node_by_id(node_id)->val;
+        return this->get_node_by_id(node_id, "get_by_id")->val;
     }
 
     std::optional<NodeId> get_left_son_id(const NodeId node_id) const
     {
         try
         {
-            return NodeId { .node = this->get_node_by_id(node_id)->left_son_id };
+            return NodeId { .node = this->get_node_by_id(node_id, "get_left_son_id")->left_son_id };
         }
         catch (...)
         {
@@ -114,7 +114,7 @@ public:
     {
         try
         {
-            return NodeId { .node = this->get_node_by_id(node_id)->right_son_id };
+            return NodeId { .node = this->get_node_by_id(node_id, "get_right_son_id")->right_son_id };
         }
         catch (...)
         {
@@ -124,12 +124,12 @@ public:
 
     Value& get_left_son(const NodeId node_id)
     {
-        return this->get_node_by_id(*this->get_left_son_id(node_id))->val;
+        return this->get_node_by_id(*this->get_left_son_id(node_id), "get_left_son")->val;
     }
 
     Value& get_right_son(const NodeId node_id)
     {
-        return this->get_node_by_id(*this->get_right_son_id(node_id))->val;
+        return this->get_node_by_id(*this->get_right_son_id(node_id), "get_right_son")->val;
     }
 
     std::optional<NodeId> get_root_id() const
@@ -144,14 +144,14 @@ public:
 
     Value& get_root()
     {
-        return get_node_by_id(*get_root_id())->val;
+        return get_node_by_id(*get_root_id(), "get_root")->val;
     }
 
     std::optional<NodeId> get_parent_id(const NodeId node_id) const
     {
         try
         {
-            return NodeId { .node = this->get_node_by_id(node_id)->parent_id };
+            return NodeId { .node = this->get_node_by_id(node_id, "get_parent_id")->parent_id };
         }
         catch (...)
         {
@@ -161,12 +161,12 @@ public:
 
     Value& get_parent(const NodeId node_id)
     {
-        return this->get_node_by_id(*this->get_parent_id(node_id))->val;
+        return this->get_node_by_id(*this->get_parent_id(node_id), "get_parent")->val;
     }
 
     const Value& get_parent(const NodeId node_id) const
     {
-        return this->get_node_by_id(*this->get_parent_id(node_id))->val;
+        return this->get_node_by_id(*this->get_parent_id(node_id), "get_parent")->val;
     }
 
     std::optional<NodeId> get_left_uncle_id(const NodeId node_id) const
@@ -199,12 +199,12 @@ public:
 
     Value& get_left_uncle(const NodeId node_id)
     {
-        return this->get_node_by_id(*this->get_left_uncle_id(node_id))->val;
+        return this->get_node_by_id(*this->get_left_uncle_id(node_id), "get_left_uncle")->val;
     }
 
     Value& get_right_uncle(const NodeId node_id)
     {
-        return this->get_node_by_id(*this->get_right_uncle_id(node_id))->val;
+        return this->get_node_by_id(*this->get_right_uncle_id(node_id), "get_right_uncle")->val;
     }
 
     bool is_left_son(NodeId node_id) const
@@ -225,8 +225,8 @@ public:
     {
         const NodeId son_id = this->get_right_son_id(node_id).value();
 
-        node_ptr_t node = this->get_node_by_id(node_id);
-        node_ptr_t son = this->get_node_by_id(son_id);
+        node_ptr_t node = this->get_node_by_id(node_id, "left_rotate");
+        node_ptr_t son = this->get_node_by_id(son_id, "left_rotate");
 
         node->right_son_id = son->left_son_id;
         if (son->left_son_id) {
@@ -238,7 +238,7 @@ public:
         if (node->parent_id.expired()) {
             this->root_ = son;
         } else {
-            node_ptr_t parent = this->get_node_by_id(NodeId{node->parent_id});
+            node_ptr_t parent = this->get_node_by_id(NodeId{node->parent_id}, "left_rotate");
             if (parent->left_son_id == node) {
                 parent->left_son_id = son;
             } else {
@@ -254,8 +254,8 @@ public:
     {
         const NodeId son_id = this->get_left_son_id(node_id).value();
 
-        node_ptr_t node = this->get_node_by_id(node_id);
-        node_ptr_t son = this->get_node_by_id(son_id);
+        node_ptr_t node = this->get_node_by_id(node_id, "right_rotate");
+        node_ptr_t son = this->get_node_by_id(son_id, "right_rotate");
 
         node->left_son_id = son->right_son_id;
         if (son->right_son_id) {
@@ -267,7 +267,7 @@ public:
         if (node->parent_id.expired()) {
             this->root_ = son;
         } else {
-            node_ptr_t parent = this->get_node_by_id(NodeId{node->parent_id});
+            node_ptr_t parent = this->get_node_by_id(NodeId{node->parent_id}, "right_rotate");
             if (parent->left_son_id == node) {
                 parent->left_son_id = son;
             } else {
@@ -280,13 +280,13 @@ public:
     }
 
 private:
-    node_ptr_t get_node_by_id(NodeId node_id) const
+    node_ptr_t get_node_by_id(NodeId node_id, const std::string& function_name) const
     {
         node_ptr_t shared_node = node_id.node.lock();
 
         if (!shared_node)
         {
-            throw std::runtime_error("Invalid NodeId");
+            return this->root_;
         }
 
         return shared_node;

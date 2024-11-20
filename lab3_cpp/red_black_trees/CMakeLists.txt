@@ -1,3 +1,4 @@
 add_executable(main src/main.cpp
-        include/RedBlackTree.hpp
-        include/ListBST.hpp)
+        include/ArrayRedBlackTree.hpp
+        include/ListBST.hpp
+        include/LinkedRedBlackTree.hpp)

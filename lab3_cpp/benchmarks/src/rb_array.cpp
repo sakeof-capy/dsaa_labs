@@ -1,10 +1,10 @@
 #include <stdexcept>
-#include "../../red_black_trees/include/RedBlackTree.hpp"
+#include "../../red_black_trees/include/ArrayRedBlackTree.hpp"
 #include "../include/rb_benchmarks.hpp"
 
 void BM_array_rb_insertion(benchmark::State& state)
 {
-    RedBlackTree<int, int> tree;
+    ArrayRedBlackTree<int, int> tree;
     auto next_number = [] {
         static int number = 0;
         return number++;
@@ -18,7 +18,7 @@ void BM_array_rb_insertion(benchmark::State& state)
 
 void BM_array_rb_search(benchmark::State& state)
 {
-    RedBlackTree<int, int> tree;
+    ArrayRedBlackTree<int, int> tree;
 
     for (int i = 0; i < BIG_RB_TREE_SIZE; ++i)
     {
@@ -37,5 +37,3 @@ void BM_array_rb_search(benchmark::State& state)
         throw std::runtime_error("Wrong value found");
     }
 }
-
-void BM_array_rb_deletion(benchmark::State& state);

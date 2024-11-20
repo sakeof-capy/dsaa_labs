@@ -37,5 +37,3 @@ void BM_std_map_search(benchmark::State& state)
         throw std::runtime_error("Wrong value found");
     }
 }
-
-void BM_std_map_deletion(benchmark::State& state);

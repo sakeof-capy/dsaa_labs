@@ -1,10 +1,6 @@
-// #include <iostream>
-
-// #include "../include/ArrayBST.hpp"
-#include <cassert>
-
-#include "../include/ListBST.hpp"
-// #include "../include/RedBlackTree.hpp"
+#include <iostream>
+// #include "../include/ArrayRedBlackTree.hpp"
+#include "../include/LinkedRedBlackTree.hpp"
 
 void test_linked()
 {
@@ -103,18 +99,18 @@ int main()
 {
     test_linked();
     // // Red-Black Tree
-    // RedBlackTree<int, int> rbtree;
-    // rbtree.insert(8, 13);
-    // rbtree.insert(5, 13);
-    // rbtree.insert(15, 13);
-    // rbtree.insert(12, 13);
-    // rbtree.insert(19, 13);
-    // rbtree.insert(9, 13);
-    // rbtree.insert(13, 13);
-    // rbtree.insert(23, 13);
-    // rbtree.insert(10, 13);
-    //
-    // std::cout << "RBTree:\n" << rbtree << std::endl;
+    LinkedRedBlackTree<int, int> rbtree;
+    rbtree.insert(8, 13);
+    rbtree.insert(5, 13);
+    rbtree.insert(15, 13);
+    rbtree.insert(12, 13);
+    rbtree.insert(19, 13);
+    rbtree.insert(9, 13);
+    rbtree.insert(13, 13);
+    rbtree.insert(23, 13);
+    rbtree.insert(10, 13);
+
+    std::cout << "RBTree:\n" << rbtree << std::endl;
 
     // // Left rotation
     // ArrayBST<int, int> tree;
