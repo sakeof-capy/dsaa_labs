@@ -474,7 +474,7 @@ std::string stringify_subtree(
 {
     // Base case: Prevent excessive recursion or out-of-bounds access
     if (depth > 100 || node_id.node_ndx >= array.size()) {
-        return prefix + (is_left ? "|-" : "|_") + " NIL\n";
+        return prefix + (is_left ? "|--" : "|__") + " NIL\n";
     }
 
     const auto& node = array[node_id.node_ndx];

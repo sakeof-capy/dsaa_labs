@@ -22,7 +22,14 @@ struct NodeId {
 };
 
 template<typename Key, typename Value>
-class LinkedBST {
+bool operator==(const NodeId<Key, Value>& a, const NodeId<Key, Value>& b)
+{
+    return a.node.lock().get() == b.node.lock().get();
+}
+
+template<typename Key, typename Value>
+class LinkedBST
+{
 public:
     using node_t = Node<Key, Value>;
     using node_ptr_t = std::shared_ptr<node_t>;
@@ -81,12 +88,49 @@ public:
         return NodeId { new_node };
     }
 
-    const Value& get_by_id(NodeId node_id) const;
-    Value& get_by_id(NodeId node_id);
-    std::optional<NodeId> get_left_son_id(NodeId node_id) const;
-    std::optional<NodeId> get_right_son_id(NodeId node_id) const;
-    Value& get_left_son(NodeId node_id);
-    Value& get_right_son(NodeId node_id);
+    const Value& get_by_id(const NodeId node_id) const
+    {
+        return this->get_node_by_id(node_id)->val;
+    }
+
+    Value& get_by_id(const NodeId node_id)
+    {
+        return this->get_node_by_id(node_id)->val;
+    }
+
+    std::optional<NodeId> get_left_son_id(const NodeId node_id) const
+    {
+        try
+        {
+            return NodeId { .node = this->get_node_by_id(node_id)->left_son_id };
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
+
+    std::optional<NodeId> get_right_son_id(const NodeId node_id) const
+    {
+        try
+        {
+            return NodeId { .node = this->get_node_by_id(node_id)->right_son_id };
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
+
+    Value& get_left_son(const NodeId node_id)
+    {
+        return this->get_node_by_id(*this->get_left_son_id(node_id))->val;
+    }
+
+    Value& get_right_son(const NodeId node_id)
+    {
+        return this->get_node_by_id(*this->get_right_son_id(node_id))->val;
+    }
 
     std::optional<NodeId> get_root_id() const
     {
@@ -103,18 +147,137 @@ public:
         return get_node_by_id(*get_root_id())->val;
     }
 
-    std::optional<NodeId> get_parent_id(NodeId node_id) const;
-    Value& get_parent(NodeId node_id);
-    const Value& get_parent(NodeId node_id) const;
-    std::optional<NodeId> get_left_uncle_id(NodeId node_id) const;
-    std::optional<NodeId> get_right_uncle_id(NodeId node_id) const;
-    Value& get_left_uncle(NodeId node_id);
-    Value& get_right_uncle(NodeId node_id);
-    bool is_left_son(NodeId node_id) const;
-    bool is_right_son(NodeId node_id) const;
+    std::optional<NodeId> get_parent_id(const NodeId node_id) const
+    {
+        try
+        {
+            return NodeId { .node = this->get_node_by_id(node_id)->parent_id };
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
 
-    void left_rotate(NodeId node_id);
-    void right_rotate(NodeId node_id);
+    Value& get_parent(const NodeId node_id)
+    {
+        return this->get_node_by_id(*this->get_parent_id(node_id))->val;
+    }
+
+    const Value& get_parent(const NodeId node_id) const
+    {
+        return this->get_node_by_id(*this->get_parent_id(node_id))->val;
+    }
+
+    std::optional<NodeId> get_left_uncle_id(const NodeId node_id) const
+    {
+        try
+        {
+            const NodeId parent_id = *this->get_parent_id(node_id);
+            const NodeId grand_parent_id = *this->get_parent_id(parent_id);
+            return this->get_left_son_id(grand_parent_id);
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
+
+    std::optional<NodeId> get_right_uncle_id(const NodeId node_id) const
+    {
+        try
+        {
+            const NodeId parent_id = *this->get_parent_id(node_id);
+            const NodeId grand_parent_id = *this->get_parent_id(parent_id);
+            return this->get_right_son_id(grand_parent_id);
+        }
+        catch (...)
+        {
+            return std::nullopt;
+        }
+    }
+
+    Value& get_left_uncle(const NodeId node_id)
+    {
+        return this->get_node_by_id(*this->get_left_uncle_id(node_id))->val;
+    }
+
+    Value& get_right_uncle(const NodeId node_id)
+    {
+        return this->get_node_by_id(*this->get_right_uncle_id(node_id))->val;
+    }
+
+    bool is_left_son(NodeId node_id) const
+    {
+        const NodeId parent_id = *this->get_parent_id(node_id);
+        const NodeId left_son_id = *this->get_left_son_id(parent_id);
+        return left_son_id == node_id;
+    }
+
+    bool is_right_son(const NodeId node_id) const
+    {
+        const NodeId parent_id = *this->get_parent_id(node_id);
+        const NodeId right_son_id = *this->get_right_son_id(parent_id);
+        return right_son_id == node_id;
+    }
+
+    void left_rotate(const NodeId node_id)
+    {
+        const NodeId son_id = this->get_right_son_id(node_id).value();
+
+        node_ptr_t node = this->get_node_by_id(node_id);
+        node_ptr_t son = this->get_node_by_id(son_id);
+
+        node->right_son_id = son->left_son_id;
+        if (son->left_son_id) {
+            son->left_son_id->parent_id = node;
+        }
+
+        son->parent_id = node->parent_id;
+
+        if (node->parent_id.expired()) {
+            this->root_ = son;
+        } else {
+            node_ptr_t parent = this->get_node_by_id(NodeId{node->parent_id});
+            if (parent->left_son_id == node) {
+                parent->left_son_id = son;
+            } else {
+                parent->right_son_id = son;
+            }
+        }
+
+        son->left_son_id = node;
+        node->parent_id = son;
+    }
+
+    void right_rotate(const NodeId node_id)
+    {
+        const NodeId son_id = this->get_left_son_id(node_id).value();
+
+        node_ptr_t node = this->get_node_by_id(node_id);
+        node_ptr_t son = this->get_node_by_id(son_id);
+
+        node->left_son_id = son->right_son_id;
+        if (son->right_son_id) {
+            son->right_son_id->parent_id = node;
+        }
+
+        son->parent_id = node->parent_id;
+
+        if (node->parent_id.expired()) {
+            this->root_ = son;
+        } else {
+            node_ptr_t parent = this->get_node_by_id(NodeId{node->parent_id});
+            if (parent->left_son_id == node) {
+                parent->left_son_id = son;
+            } else {
+                parent->right_son_id = son;
+            }
+        }
+
+        son->right_son_id = node;
+        node->parent_id = son;
+    }
 
 private:
     node_ptr_t get_node_by_id(NodeId node_id) const
@@ -157,6 +320,76 @@ private:
 private:
     node_ptr_t root_;
 };
+
+#include <iomanip> // For std::setw
+
+// Helper function to stringify a subtree for LinkedBST
+template<typename Key, typename Value>
+std::string stringify_subtree(
+    const typename LinkedBST<Key, Value>::NodeId& node_id,
+    const std::string& prefix,
+    bool is_left,
+    size_t depth)
+{
+    // Base case: Prevent excessive recursion or handle null nodes
+    if (depth > 100 || node_id.node.expired()) {
+        return prefix + (is_left ? "|--" : "|__") + " NIL\n";
+    }
+
+    // Access the current node
+    auto node = node_id.node.lock();
+    std::ostringstream result;
+
+    // Current node representation
+    result << prefix
+           << (is_left ? "|--" : "|__")
+           << " " << node->key << " -> " << node->val << "\n";
+
+    // Update the prefix for child nodes
+    std::string child_prefix = prefix + (is_left ? "|   " : "    ");
+
+    // Process left child
+    if (node->left_son_id) {
+        result << stringify_subtree<Key, Value>(
+            typename LinkedBST<Key, Value>::NodeId{ .node = node->left_son_id },
+            child_prefix,
+            true,
+            depth + 1
+        );
+    } else {
+        result << child_prefix << "|-- NIL\n";
+    }
+
+    // Process right child
+    if (node->right_son_id) {
+        result << stringify_subtree<Key, Value>(
+            typename LinkedBST<Key, Value>::NodeId{ .node = node->right_son_id },
+            child_prefix,
+            false,
+            depth + 1
+        );
+    } else {
+        result << child_prefix << "|__ NIL\n";
+    }
+
+    return result.str();
+}
+
+// Overload << operator for LinkedBST
+template<typename Key, typename Value>
+std::ostream& operator<<(std::ostream& os, const LinkedBST<Key, Value>& bst) {
+    if (bst.get_root_id().has_value()) {
+        os << stringify_subtree<Key, Value>(
+            bst.get_root_id().value(),
+            "",
+            false,
+            0
+        );
+    } else {
+        os << "NIL\n";
+    }
+    return os;
+}
 
 
 #endif // LISTBST_HPP
